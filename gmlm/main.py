@@ -4,16 +4,17 @@ from torch_geometric.datasets import Amazon, Coauthor, Planetoid
 from models import GraphMaskedLM
 from train import pretrain_contrastive, train_model
 from evaluation import evaluate_model
+import torchinfo
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 dataset_configs = [
-    {'name': 'Amazon-Photo', 'class': Amazon, 'kwargs': {'root': './data/Amazon-Photo', 'name': 'Photo'}, 'split_transform': True},
-    {'name': 'Amazon-Computers', 'class': Amazon, 'kwargs': {'root': './data/Amazon-Computers', 'name': 'Computers'}, 'split_transform': True},
-    {'name': 'Coauthor-CS', 'class': Coauthor, 'kwargs': {'root': './data/Coauthor-CS', 'name': 'CS'}, 'split_transform': True},
-    {'name': 'Cora', 'class': Planetoid, 'kwargs': {'root': './data', 'name': 'Cora'}, 'split_transform': True},
+    # {'name': 'Amazon-Photo', 'class': Amazon, 'kwargs': {'root': './data/Amazon-Photo', 'name': 'Photo'}, 'split_transform': True},
+    # {'name': 'Amazon-Computers', 'class': Amazon, 'kwargs': {'root': './data/Amazon-Computers', 'name': 'Computers'}, 'split_transform': True},
+    # {'name': 'Coauthor-CS', 'class': Coauthor, 'kwargs': {'root': './data/Coauthor-CS', 'name': 'CS'}, 'split_transform': True},
+    # {'name': 'Cora', 'class': Planetoid, 'kwargs': {'root': './data', 'name': 'Cora'}, 'split_transform': True},
     {'name': 'Citeseer', 'class': Planetoid, 'kwargs': {'root': './data', 'name': 'Citeseer'}, 'split_transform': True},
-    {'name': 'PubMed', 'class': Planetoid, 'kwargs': {'root': './data', 'name': 'PubMed'}, 'split_transform': True},
+    # {'name': 'PubMed', 'class': Planetoid, 'kwargs': {'root': './data', 'name': 'PubMed'}, 'split_transform': True},
 ]
 
 for config in dataset_configs:
@@ -34,6 +35,7 @@ for config in dataset_configs:
     in_channels = dataset.num_features
     num_classes = dataset.num_classes
     model = GraphMaskedLM(in_channels, hidden_channels=128, num_classes=num_classes, nhead=4).to(device)
+    print(torchinfo.summary(model))
 
     print("Starting contrastive pretraining...")
     pretrain_contrastive(model, data, pretrain_epochs=20, temp=0.5)
@@ -41,7 +43,8 @@ for config in dataset_configs:
     print("Starting fine-tuning...")
     train_model(model, data, num_epochs=150)
 
-    print("Evaluating model...")
-    evaluate_model(model, data)
+    # print("Evaluating model...")
+    # evaluate_model(model, data)
+    torch.save(model.state_dict(), f'{dataset_name.lower()}_model.pt')
 
 print("\n=== All datasets processed successfully! ===")
