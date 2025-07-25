@@ -1,3 +1,0 @@
-torch==2.5.1
-torch-geometric==2.6.1
-transformers @ git+https://github.com/huggingface/transformers.git@3f860dba553d09a8eb96fded8d940c98a9a86854
